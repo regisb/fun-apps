@@ -47,7 +47,8 @@ FEATURES['AUTH_USE_OPENID_PROVIDER'] = True
 FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = False
 FEATURES['ADVANCED_SECURITY'] = False
 FEATURES['CERTIFICATES_ENABLED'] = True
-FEATURES['ENABLE_CONTENT_LIBRARIES'] = False  # Content libraries support requires new coursekey format
+FEATURES['ENABLE_CONTENT_LIBRARIES'] = True
+
 # restrain user who can create course in studio to granted ones in CourseCreator table
 FEATURES['ENABLE_CREATOR_GROUP'] = True
 FEATURES['ENABLE_DISCUSSION_SERVICE'] = True
