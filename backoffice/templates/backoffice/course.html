@@ -22,6 +22,7 @@
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">{% trans "Information" %}</a></li>
+    <li role="presentation"><a href="#wiki" aria-controls="home" role="tab" data-toggle="tab">{% trans "Wiki" %}</a></li>
   </ul>
 
 
@@ -82,7 +83,28 @@
 
     </div>
 
+    <div role="tabpanel" class="tab-pane active" id="wiki">
+
+      <div class="row">
+        <div class="col-md-12">
+
+        </div>
+      </div>
+
+      <div class="row button-bar">
+        <div class="col-md-10">
+            <div class="row">
+                <a class="btn btn-primary" href="">{% trans "View wiki" %}</a>
+            </div>
+        </div>
+        <div class="col-md-2 text-right">
+          <a id="delete-course" class="btn btn-danger" data-toggle="modal" data-target="#close-wiki-modal">{% trans "Close wiki" %}</a>
+        </div>
+      </div>
+    </div>
+
   </div>
+
 
 </div>
 
