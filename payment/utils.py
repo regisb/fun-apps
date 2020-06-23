@@ -7,13 +7,15 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.utils.translation import ugettext_lazy as _
 from django.utils import translation
+from opaque_keys.edx.keys import CourseKey
 
 from requests.exceptions import ConnectionError
-
 from edxmako.shortcuts import render_to_string
-from student.models import CourseEnrollment
 
 from openedx.core.djangoapps.commerce.utils import ecommerce_api_client
+from openedx.core.djangoapps.course_groups.models import CourseUserGroup
+from openedx.core.djangoapps.course_groups.cohorts import get_cohort_by_name, \
+    add_user_to_cohort
 
 from courses.models import Course
 
@@ -49,8 +51,7 @@ def get_order_context(user, order, course):
     return context
 
 
-def send_confirmation_email(user, order_number):
-    order = get_order(user, order_number)
+def send_confirmation_email(user, order):
     course = get_course(order)
     subject = _(u"[FUN-MOOC] Payment confirmation")
     context = get_order_context(user, order, course)
@@ -68,6 +69,47 @@ def send_confirmation_email(user, order_number):
     email.send()
 
 
+def register_user_verified_cohort(user, order):
+    """
+    Once a user has been verified, add it to a cohort.
+
+    The cohort to which the user should be added is given by the VERIFIED_COHORTS and the DEFAULT_VERIFIED_COHORT
+    settings. VERIFIED_COHORTS is a dict of the form:
+
+        {
+            "<course id>": "<cohort name>",
+        }
+
+    If the course ID is not present in VERIFIED_COHORTS, the cohort name is given by DEFAULT_VERIFIED_COHORT.
+    If a course is associated to a cohort that doesn't exist or an empty cohort name, then the user is not added to any
+    cohort. Thus, to disable this feature for a specific course, set:
+
+        VERIFIED_COHORTS = {
+            "<course id>": None,
+        }
+
+    To disable this feature globally, set:
+
+        VERIFIED_COHORTS = {}
+        DEFAULT_VERIFIED_COHORT = None
+    """
+    course = get_course(order)
+    verified_cohort_default_name = getattr(settings, "DEFAULT_VERIFIED_COHORT", "")
+    verified_cohort_name = getattr(settings, "VERIFIED_COHORTS", {}).get(
+        course.key,
+        verified_cohort_default_name,
+    )
+    cohort = None
+    if verified_cohort_name:
+        course_key = CourseKey.from_string(course.key)
+        try:
+            cohort = get_course_cohort_by_name(course_key, verified_cohort_name)
+        except CourseUserGroup.DoesNotExist:
+            pass
+    if cohort:
+        # This will also trigger the edx.cohort.user_add_requested event
+        add_user_to_cohort(cohort, user.email)
+
+
 def format_date_order(order, format):
     return dateutil.parser.parse(order['date_placed']).strftime(format)
-
